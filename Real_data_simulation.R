@@ -1,5 +1,6 @@
 library(plotrix)
-#library(ggplot2)
+
+
 #Create data set
 N=nrow(ADMneatX);
 q=ncol(ADMneatX);
