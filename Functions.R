@@ -1,4 +1,20 @@
-###Alternating gradient descent to train Rasch model parameters under missing data setting###
+### Generate missing pattern used in the simulation studies ###
+generate_missingness=function(N, J){ #split into 5 groups, N is divisible by 5 and J is divisible by 2
+  Z1=matrix(NA, N, J)
+  Nmin=N/5
+  Jmin=J/2
+  Z1[1:Nmin, 1:Jmin]=1
+  Z1[(Nmin+1):(2*Nmin), (Jmin/2+1):(1.5*Jmin)]=1
+  Z1[(2*Nmin+1):(3*Nmin), (Jmin+1):(2*Jmin)]=1
+  Z1[(3*Nmin+1):(4*Nmin), c(1:(Jmin/2), (Jmin+1):(1.5*Jmin))]=1
+  Z1[(4*Nmin+1):(5*Nmin), c((Jmin/2+1):Jmin, (1.5*Jmin+1):(2*Jmin))]=1
+  return(Z1)
+}
+
+
+
+### Training ###
+### Alternating gradient descent to train Rasch model parameters under missing data setting ###
 
 #Arguments:
 #data: data matrix with missing entries; 
@@ -30,4 +46,20 @@ Rasch_missing = function(data, beta.vec, theta.vec, tau = 0.3, tol = 0.001){
     print(JML);
   }  
   list(beta.vec = beta.vec, theta.vec = theta.vec);
+}
+
+
+
+### Results post-processing ###
+
+#Result is a list of trained results obtained from parallel computing package doParallel
+#This function converts a list of results into a list of two matrices, consisting of trained theta values and beta values
+unlist=function(result){
+  the_v=result[[1]][[2]]
+  beta_v=result[[1]][[1]]
+  for (i in 2:length(result)){
+    the_v=rbind(the_v, result[[i]][[2]])
+    beta_v=rbind(beta_v, result[[i]][[1]])
+  }
+  return(list(the=the_v, beta=beta_v))
 }
