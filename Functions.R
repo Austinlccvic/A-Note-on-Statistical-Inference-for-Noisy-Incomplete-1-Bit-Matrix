@@ -63,3 +63,39 @@ unlist=function(result){
   }
   return(list(the=the_v, beta=beta_v))
 }
+
+
+#Returns the oracle variance of theta_i
+#Arguments:
+#p_mat: a matrix with (i,j)'th entry being P(Y_{ij}=1) under true theta and beta values;
+#i: index of individual i;
+#da: missing pattern matrix.
+oracle_var_theta=function(p_mat, i, da){
+  va=p_mat*(1-p_mat)
+  va[is.na(da)==T]=0
+  oracle=1/sum(va[i,])
+  return(oracle)
+}
+
+#Returns the oracle variance of beta_j for no additional covariates case
+#Arguments:
+#p_mat: a matrix with (i,j)'th entry being P(Y_{ij}=1) under true theta and beta values;
+#j: index of item j;
+#da: missing pattern matrix.
+oracle_var_beta=function(p_mat, j, da){
+  va=p_mat*(1-p_mat)
+  va[is.na(da)==T]=0
+  oracle=1/sum(va[,j])
+  return(oracle)
+}
+
+
+#Compute theoretical normal density curve with mean mu and sd sigma, within range [l,u] with jumpsize of spc
+generate_norm_density=function(sigma, mu, l, u, spc){
+  norm_d=c()
+  for (x in seq(l, u, spc)){
+    d=dnorm(x, mean = mu, sd = sigma, log = FALSE)
+    norm_d=c(norm_d, d)
+  }
+  return(norm_d)
+}
