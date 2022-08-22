@@ -1,0 +1,34 @@
+#Projected gradient ascent
+#Arguments:
+#data: data matrix with missing entries; 
+#beta.vec: initial values for beta vector;
+#theta.vec: initial values for theta vector; 
+#gamma1 and gamma2 are learning rates, default 0.3; 
+#eps: tolerance level on the convergence of the log-likelihood.
+
+
+Rasch_missing = function(data, beta.vec, theta.vec, gamma1 = 0.3, gamma2 = 0.3, eps = 0.001){
+  N=length(theta.vec);
+  J=length(beta.vec);
+  temp = theta.vec %*% t(rep(1, J)) - rep(1, N) %*% t(beta.vec); #M matrix at initial values
+  JML0 = -Inf; #Initialize step 0 log likelihood as negative infinity
+  JML = sum(data * temp - log(1+exp(temp)), na.rm=T); #Initialize step 1 log likelihood at initial values of beta and theta
+  Iteration.number=1
+  CPU_time_start=Sys.time()
+  JML_record=c(JML)
+  while(JML - JML0 > eps){ #tolerance on the consecutive change in log likelihood
+    Iteration.number=Iteration.number+1
+    JML0 = JML;
+    prob = 1/(1+exp(-temp));
+    theta.vec = theta.vec + gamma1 * rowMeans(data-prob, na.rm=T); #update for theta estimates
+    theta.vec=theta.vec-mean(theta.vec); #projection
+    beta.vec = beta.vec + gamma2 * colMeans(-data + prob, na.rm=T); #update for beta estimates
+    temp = theta.vec %*% t(rep(1, J)) - rep(1, N) %*% t(beta.vec);
+    JML = sum(data * temp - log(1+exp(temp)), na.rm = T);
+    JML_record=c(JML_record, JML)
+    print(JML);
+  }
+  CPU_time_end=Sys.time()
+  time_used=CPU_time_end-CPU_time_start
+  list(beta.vec = beta.vec, theta.vec = theta.vec, Iteration.number=Iteration.number, time.used=time_used, JML.record=JML_record);
+}
